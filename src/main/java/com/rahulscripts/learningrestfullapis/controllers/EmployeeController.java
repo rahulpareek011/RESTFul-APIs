@@ -4,11 +4,16 @@ import com.rahulscripts.learningrestfullapis.dto.EmployeeDTO;
 import com.rahulscripts.learningrestfullapis.entities.EmployeeEntity;
 import com.rahulscripts.learningrestfullapis.repositories.EmployeeRepository;
 import com.rahulscripts.learningrestfullapis.services.EmployeeService;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/employees")
@@ -73,18 +78,42 @@ public class EmployeeController {
 
 
     @GetMapping(path = "{employeeId}")
-    public EmployeeDTO getEmployee(@PathVariable(name = "employeeId") Long id) {
-        return employeeService.getEmployeeById(id);
+    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable(name = "employeeId") Long id) {
+        Optional<EmployeeDTO> employeeDTO = employeeService.getEmployeeById(id);
+        System.out.println("Controller: "+employeeDTO+" "+employeeDTO.toString());
+        return employeeDTO.map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1)).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public List<EmployeeDTO> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
+        return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
     @PostMapping
-    public EmployeeDTO createNewEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        return employeeService.createNewEmployee(employeeDTO);
+    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody EmployeeDTO employeeDTO) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(employeeService.createNewEmployee(employeeDTO));
     }
 
+    @PutMapping
+    public ResponseEntity<EmployeeDTO> updateExistingEmployee(@RequestParam Long id,@RequestBody EmployeeDTO employeeDTO){
+        return ResponseEntity.ok(employeeService.updateEmployee(id,employeeDTO));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Boolean> deleteExistingEmployee(@RequestParam Long id){
+        boolean isDeleted = employeeService.deleteEmployee(id);
+        if (isDeleted)
+            return ResponseEntity.ok(true);
+        else
+            return ResponseEntity.notFound().build();
+    }
+
+    @PatchMapping
+    public ResponseEntity<EmployeeDTO> updateEmployeeField(@RequestParam Long id,@RequestBody Map<String,Object> updates){
+        EmployeeDTO employeeDTO = employeeService.updateEmployeeField(id,updates);
+        if(employeeDTO==null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(employeeDTO);
+    }
 }
