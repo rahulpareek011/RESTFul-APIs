@@ -2,6 +2,7 @@ package com.rahulscripts.learningrestfullapis.services;
 
 import com.rahulscripts.learningrestfullapis.dto.EmployeeDTO;
 import com.rahulscripts.learningrestfullapis.entities.EmployeeEntity;
+import com.rahulscripts.learningrestfullapis.exceptions.ResourceNotFoundException;
 import com.rahulscripts.learningrestfullapis.repositories.EmployeeRepository;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.apache.el.util.ReflectionUtil;
@@ -54,24 +55,23 @@ public class EmployeeService {
 
     public EmployeeDTO updateEmployee(Long id,EmployeeDTO employeeDTO){
         EmployeeEntity employeeEntity = modelMapper.map(employeeDTO, EmployeeEntity.class);
-        employeeEntity.setId(id);
+        isEmployeeExistById(id);
         EmployeeEntity savedEmployee = employeeRepository.save(employeeEntity);
         return modelMapper.map(savedEmployee, EmployeeDTO.class);
     }
 
-    public Boolean isEmployeeExistById(Long id){
-        return employeeRepository.existsById(id);
+    public void isEmployeeExistById(Long id){
+        if(!employeeRepository.existsById(id)) throw new ResourceNotFoundException("No employee found by this id: "+id);
     }
 
     public Boolean deleteEmployee(Long id) {
-        Boolean isPresent = isEmployeeExistById(id);
+        isEmployeeExistById(id);
         employeeRepository.deleteById(id);
-        return isPresent;
+        return true;
     }
 
     public EmployeeDTO updateEmployeeField(Long id, Map<String,Object> updates){
-        Boolean isPresent = isEmployeeExistById(id);
-        if(!isPresent) return null;
+        isEmployeeExistById(id);
         EmployeeEntity employeeEntity = employeeRepository.findById(id).get();
         updates.forEach((field,value) -> {
             Field fieldsRequired = ReflectionUtils.findRequiredField(EmployeeEntity.class,field);

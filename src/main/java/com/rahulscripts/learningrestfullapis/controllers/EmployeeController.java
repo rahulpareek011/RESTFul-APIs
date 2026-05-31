@@ -2,6 +2,7 @@ package com.rahulscripts.learningrestfullapis.controllers;
 
 import com.rahulscripts.learningrestfullapis.dto.EmployeeDTO;
 import com.rahulscripts.learningrestfullapis.entities.EmployeeEntity;
+import com.rahulscripts.learningrestfullapis.exceptions.ResourceNotFoundException;
 import com.rahulscripts.learningrestfullapis.repositories.EmployeeRepository;
 import com.rahulscripts.learningrestfullapis.services.EmployeeService;
 import jakarta.validation.Valid;
@@ -11,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping(path = "/employees")
@@ -81,8 +79,9 @@ public class EmployeeController {
     @GetMapping(path = "{employeeId}")
     public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable(name = "employeeId") Long id) {
         Optional<EmployeeDTO> employeeDTO = employeeService.getEmployeeById(id);
-        System.out.println("Controller: "+employeeDTO+" "+employeeDTO.toString());
-        return employeeDTO.map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1)).orElse(ResponseEntity.notFound().build());
+        return employeeDTO
+                .map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
+                .orElseThrow(() -> new ResourceNotFoundException("Employee Not Found With id: "+id));
     }
 
     @GetMapping
