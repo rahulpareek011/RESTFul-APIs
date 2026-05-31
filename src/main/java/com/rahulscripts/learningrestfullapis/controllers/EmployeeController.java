@@ -4,6 +4,7 @@ import com.rahulscripts.learningrestfullapis.dto.EmployeeDTO;
 import com.rahulscripts.learningrestfullapis.entities.EmployeeEntity;
 import com.rahulscripts.learningrestfullapis.repositories.EmployeeRepository;
 import com.rahulscripts.learningrestfullapis.services.EmployeeService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,14 +91,14 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(employeeService.createNewEmployee(employeeDTO));
     }
 
     @PutMapping
-    public ResponseEntity<EmployeeDTO> updateExistingEmployee(@RequestParam Long id,@RequestBody EmployeeDTO employeeDTO){
+    public ResponseEntity<EmployeeDTO> updateExistingEmployee(@RequestParam Long id,@RequestBody @Valid EmployeeDTO employeeDTO){
         return ResponseEntity.ok(employeeService.updateEmployee(id,employeeDTO));
     }
 
