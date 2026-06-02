@@ -16,26 +16,30 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException exception){
+    public ResponseEntity<ApiResponse<?>> handleResourceNotFound(ResourceNotFoundException exception){
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .errorMessage(exception.getMessage())
                 .build();
-        return new ResponseEntity<>(apiError,HttpStatus.NOT_FOUND);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    public ResponseEntity<ApiResponse<?>> buildErrorResponseEntity(ApiError apiError){
+        return new ResponseEntity<>(new ApiResponse<>(apiError),apiError.getStatus());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleException(Exception exception){
+    public ResponseEntity<ApiResponse<?>> handleException(Exception exception){
         ApiError apiError = ApiError
                 .builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .errorMessage(exception.getMessage())
                 .build();
-        return new ResponseEntity<>(apiError,HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponseEntity(apiError);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException exception){
+    public ResponseEntity<ApiResponse<?>> handleValidationErrors(MethodArgumentNotValidException exception){
         List<String> errors = exception.getBindingResult()
                 .getAllErrors()
                 .stream()
@@ -48,6 +52,6 @@ public class GlobalExceptionHandler {
                 .errorMessage("Validation failed")
                 .subError(errors)
                 .build();
-        return new ResponseEntity(apiError,HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
     }
 }
